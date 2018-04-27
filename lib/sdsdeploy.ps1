@@ -50,10 +50,15 @@ function Connect-SDSDeploy{
     }else{ $cred_parameter = " -Credential $($Credential) " }
 
     $parameter = ""
-    $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/ontapdeploy/network" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
-    
-    $_request_ | Add-Member Credential $Credential
-    return $global:SDSDeploy = $_request_
+    try {
+        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/ontapdeploy/network" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+        $_request_ | Add-Member Credential $Credential
+        return $global:SDSDeploy = $_request_ 
+    }
+    catch {
+        throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
+    }
+
 }
 
 function Disconnect-SDSDeploy{
@@ -90,9 +95,14 @@ function Get-SDSSystemInfo{
         $DeployServer = $variable:SDSDeploy.deploy_ipv4
 
         $Credential = $variable:SDSDeploy.Credential
-        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/system" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+        try {
+            $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/system" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+            return $_request_ 
+        }
+        catch {
+            throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
+        }
         
-        return $_request_
     }else{
         write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
     }
@@ -110,9 +120,15 @@ function Get-SDSASUP{
             $DeployServer = $variable:SDSDeploy.deploy_ipv4
     
             $Credential = $variable:SDSDeploy.Credential
-            $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method GET -ContentType "HAL+JSON" -Credential $Credential).content | ConvertFrom-Json
-            
-            return $_request_.asup_static
+
+            try {
+                $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method GET -ContentType "HAL+JSON" -Credential $Credential).content | ConvertFrom-Json
+                return $_request_.asup_static                
+            }
+            catch {
+                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+            }
+
         }else{
             write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
         }
@@ -129,9 +145,14 @@ function Get-SDSASUPSiteConfig{
             $DeployServer = $variable:SDSDeploy.deploy_ipv4
     
             $Credential = $variable:SDSDeploy.Credential
-            $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method GET -ContentType "HAL+JSON" -Credential $Credential).content | ConvertFrom-Json
+            try {
+                $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method GET -ContentType "HAL+JSON" -Credential $Credential).content | ConvertFrom-Json
+                return $_request_.asup_mutable
+            }
+            catch {
+                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"
+            }
             
-            return $_request_.asup_mutable
         }else{
             write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
         }
@@ -232,20 +253,17 @@ param(
                     $i++
                 } 
             $json_request += "}"
-            $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method PUT -ContentType "application/json" -Credential $Credential -body $($json_request))
-            
-            return $_request_
+            try {
+                $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method PUT -ContentType "application/json" -Credential $Credential -body $($json_request))
+                return $_request_               
+            }
+            catch {
+                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+            }
+
         }else{
             write-host -foregroundcolor yellow "Nothing to change!"
         }
     }
 }
 
-
-######################################### EXPORT Members
-Export-ModuleMember Get-SDSSystemInfo
-Export-ModuleMember Connect-SDSDeploy
-Export-ModuleMember Disconnect-SDSDeploy
-Export-ModuleMember Get-SDSASUP
-Export-ModuleMember Set-SDSASUP
-Export-ModuleMember Get-SDSASUPSiteConfig

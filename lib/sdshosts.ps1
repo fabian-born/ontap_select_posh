@@ -26,9 +26,13 @@ function Get-SDSHosts{
         $DeployServer = $variable:SDSDeploy.deploy_ipv4
 
         $Credential = $variable:SDSDeploy.Credential
-        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/hosts" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
-        
-        return $_request_.number_of_hosts_per_type
+        try {
+            $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/hosts" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+            return $_request_.number_of_hosts_per_type     
+        }
+        catch {
+            throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+        } 
     }else{
         write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
     }
