@@ -32,7 +32,7 @@ function Get-SDSCluster{
             return $_request_
         }
         catch {
-            throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+            write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
         }
         
     }else{
@@ -43,4 +43,3 @@ function Get-SDSCluster{
 
 
 
-Export-ModuleMember Get-SDSCluster

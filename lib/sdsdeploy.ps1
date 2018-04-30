@@ -56,7 +56,7 @@ function Connect-SDSDeploy{
         return $global:SDSDeploy = $_request_ 
     }
     catch {
-        throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
+        write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
     }
 
 }
@@ -100,7 +100,7 @@ function Get-SDSSystemInfo{
             return $_request_ 
         }
         catch {
-            throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
+            write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"   
         }
         
     }else{
@@ -126,7 +126,7 @@ function Get-SDSASUP{
                 return $_request_.asup_static                
             }
             catch {
-                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
             }
 
         }else{
@@ -150,7 +150,7 @@ function Get-SDSASUPSiteConfig{
                 return $_request_.asup_mutable
             }
             catch {
-                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"
             }
             
         }else{
@@ -232,11 +232,11 @@ param(
         
         if ($ASUPEnabled){ $json_tmp.add("""asup_enabled"" : $($ASUPEnabled)" ) > $null }
         if ($chunksize){ $json_tmp.add("""chunk_size"" : $($chunksize)") > $null }
-        if ($destinationurl){ $json_tmp.add("""destination_url"" : $($destinationurl)") > $null}
-        if ($localcollection){ $json_tmp.add("""local_collection"" : $($localcollection)") > $null}
-        if ($productcompany){ $json_tmp.add("""product_company"" : $($productcompany)") > $null}
-        if ($productsite){ $json_tmp.add("""product_site"" : $($productsite)" ) > $null}
-        if ($proxyurl){ $json_tmp.add("""proxy_url"" : $($proxyurl)" ) > $null}
+        if ($destinationurl){ $json_tmp.add("""destination_url"" : ""$($destinationurl)""") > $null}
+        if ($localcollection){ $json_tmp.add("""local_collection"" : ""$($localcollection)""") > $null}
+        if ($productcompany){ $json_tmp.add("""product_company"" : ""$($productcompany)""") > $null}
+        if ($productsite){ $json_tmp.add("""product_site"" : ""$($productsite)""" ) > $null}
+        if ($proxyurl){ $json_tmp.add("""proxy_url"" : ""$($proxyurl)""" ) > $null}
         if ($retrysendcount){ $json_tmp.add("""retry_send_count"" :  $($retrysendcount)") > $null}
         if ($retrysendinterval){ $json_tmp.add("""retry_send_interval"" : $($retrysendinterval)") > $null }
         if ($senderthreads){ $json_tmp.add("""sender_threads"" : $($senderthreads)") > $null}
@@ -253,12 +253,13 @@ param(
                     $i++
                 } 
             $json_request += "}"
+            write-host "$($json_request)"
             try {
                 $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/autosupport/configuration" -SkipCertificateCheck -Method PUT -ContentType "application/json" -Credential $Credential -body $($json_request))
                 return $_request_               
             }
             catch {
-                throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
             }
 
         }else{

@@ -31,7 +31,7 @@ function Get-SDSHosts{
             return $_request_.number_of_hosts_per_type     
         }
         catch {
-            throw "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+            write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
         } 
     }else{
         write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
