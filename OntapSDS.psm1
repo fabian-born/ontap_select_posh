@@ -1,4 +1,4 @@
-# Set-Location "/Users/fabianb/Documents/devel/OntapSDS"
+set-Location "/Users/fabian/devel/Powershell/OntapSDS"
  
 Get-ChildItem ".\lib" | Where {$_.Name -like "*.ps1"} | ForEach {
  
