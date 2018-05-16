@@ -16,3 +16,7 @@ Export-ModuleMember Get-SDSASUPSiteConfig
 Export-ModuleMember Get-SDSCluster
 Export-ModuleMember Get-SDSHosts
 Export-ModuleMember Get-SDSSystemInfo
+Export-ModuleMember New-SDSCluster
+Export-ModuleMember Remove-SDSCluster
+Export-ModuleMember New-SDSHosts
+Export-ModuleMember Get-SDSHostsInfo

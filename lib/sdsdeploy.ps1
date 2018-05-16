@@ -51,8 +51,12 @@ function Connect-SDSDeploy{
 
     $parameter = ""
     try {
-        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v2/ontapdeploy/network" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+        $_request_ = New-Object PSObject
+        $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/deploy" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+        $_request_ | Add-Member Hostname $_r.record.hostname
+        $_request_ | Add-Member SystemID $_r.record.system_id 
         $_request_ | Add-Member Credential $Credential
+        $_request_ | Add-Member DeployServer $DeployServer
         return $global:SDSDeploy = $_request_ 
     }
     catch {
@@ -67,7 +71,7 @@ function Disconnect-SDSDeploy{
 }
 
 
-function Get-SDSSystemInfo{
+function Get-SDSSystemInfoV2{
 ##############################
 #.SYNOPSIS
 #Short description
@@ -92,7 +96,7 @@ function Get-SDSSystemInfo{
     # actual code for the function goes here see the end of the topic for the complete code sample
     
     if ($global:SDSDeploy){
-        $DeployServer = $variable:SDSDeploy.deploy_ipv4
+        $DeployServer = $variable:SDSDeploy.DeployServer
 
         $Credential = $variable:SDSDeploy.Credential
         try {
@@ -110,7 +114,7 @@ function Get-SDSSystemInfo{
 }
 
 
-function Get-SDSASUP{
+function Get-SDSASUPV2{
     param(
         [Parameter(Mandatory=$false)]
         [string]$DeployServer
@@ -135,7 +139,7 @@ function Get-SDSASUP{
         
 }
 
-function Get-SDSASUPSiteConfig{
+function Get-SDSASUPSiteConfigV2{
     param(
         [Parameter(Mandatory=$false)]
         [string]$DeployServer
@@ -159,7 +163,7 @@ function Get-SDSASUPSiteConfig{
         
 }
 
-function Set-SDSASUP{
+function Set-SDSASUPV2{
 ##############################
 #.SYNOPSIS
 #
