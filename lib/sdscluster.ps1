@@ -201,3 +201,96 @@ function Remove-SDSCluster{
             }
         
 }
+
+
+
+function Add-SDSClusterParameter{
+<#
+.SYNOPSIS
+
+
+.DESCRIPTION
+Long description
+
+.PARAMETER DeployServer
+Parameter description
+
+.PARAMETER ClusterName
+Parameter description
+
+.PARAMETER parent
+Parameter description
+
+.PARAMETER Object
+Parameter description
+
+.PARAMETER Value
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>#
+    
+    param(
+        [Parameter(Mandatory=$false)]
+        [string]$DeployServer,
+        [Parameter(Mandatory=$true)]
+        [string]$ClusterName,
+        [Parameter(Mandatory=$false)]
+        [string]$parent,
+        [Parameter(Mandatory=$true)]
+        [string]$Object,
+        [Parameter(Mandatory=$true)]
+        [string]$Value,
+        [Parameter(Mandatory=$false)]
+        [switch]$isArray
+    )
+
+    if ($global:SDSDeploy){
+        $DeployServer = $variable:SDSDeploy.DeployServer
+    
+        $Credential = $variable:SDSDeploy.Credential
+        
+
+        $json_request ="{`n"
+        if ($parent){   $json_request += """$($parent)"" : {   `n" }
+        if ($object){   $json_request += """$($object)"" :   `n " }
+        if ($isArray){ 
+            $json_request += " [`n"
+            write-host ((($value).split(",")).length)
+            $i=0;while($i -lt ((($value).split(",")).length)){ 
+                
+                if($i -eq ((($value).split(",")).length-1)){
+                    $json_request +=  " ""$(($value).split(",")[$i])""`n"
+                }else{
+                        $json_request += """$(($value).split(",")[$i])"",`n"
+                }   
+                
+                $i++
+            }
+            $json_request += " ]`n"
+            if ($parent){   $json_request += "}`n" }
+        }else{
+            $json_request += " {`n"
+            $json_request += " ""$($value)"" `n"
+            $json_request += " }`n"
+        }
+        $json_request += " }`n"
+        try {
+            $clid = (Get-SDSCluster | ?{$_.name -eq "$($ClusterName)"}).id
+            write-host $json_request
+            $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)" -SkipCertificateCheck -Method PATCH -ContentType "application/json" -Credential $Credential -body $($json_request))
+           
+            return $_r
+        }
+        catch {
+            write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+        }
+            
+    }else{
+        write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+    }
+}

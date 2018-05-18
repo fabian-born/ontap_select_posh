@@ -20,3 +20,4 @@ Export-ModuleMember New-SDSCluster
 Export-ModuleMember Remove-SDSCluster
 Export-ModuleMember New-SDSHosts
 Export-ModuleMember Get-SDSHostsInfo
+Export-ModuleMember Add-SDSClusterParameter
