@@ -96,7 +96,6 @@ function New-SDSHosts{
         [Parameter(Mandatory=$false)][string]$type, 
         [Parameter(Mandatory=$false)][string]$vcenter,
         [Parameter(Mandatory=$false)][string]$name
-
         ) 
         if (!($global:SDSDeploy)){
             write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
@@ -106,9 +105,10 @@ function New-SDSHosts{
             $json_tmp = New-Object System.Collections.ArrayList
             
             if ($type){ $json_tmp.add("""hypervisor_type"" : ""$($type)""" ) > $null }
-            if ($vcenter){ $json_tmp.add("""vcenter"" : ""$($vcenter)""") > $null }
+            if ($vcenter){ $json_tmp.add("""management_server"" : ""$($vcenter)""") > $null }
             if ($name){ $json_tmp.add("""name"" : ""$($name)""") > $null}
- 
+            
+            
             if(($json_tmp.count) -gt 0){
                 $json_request = "{ `n"
                 $json_request += """hosts"": [`n"
@@ -124,7 +124,7 @@ function New-SDSHosts{
                 $json_request += "  }`n"
                 $json_request += " ]`n"
                 $json_request += "}`n"
-                ## write-host "$($json_request)"
+                write-host "$($json_request)"
                 try {
                     $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts" -SkipCertificateCheck -Method POST -ContentType "application/json" -Credential $Credential -body $($json_request))
                     return $_request_               
