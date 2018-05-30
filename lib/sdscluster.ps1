@@ -150,23 +150,25 @@ function New-SDSCluster{
 }
 
 function Remove-SDSCluster{
-    ###############################
-    #.SYNOPSIS
-    #Short description
-    #
-    #.DESCRIPTION
-    #Long description
-    #
-    #.PARAMETER DeployServer
-    #Parameter description
-    #
-    #.EXAMPLE
-    #An example
-    #
-    #.NOTES
-    #General notes
+<#
+.SYNOPSIS
+Short description
 
-    ##############################
+.DESCRIPTION
+Long description
+
+.PARAMETER DeployServer
+Parameter description
+
+.PARAMETER ClusterName
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
     
         param(
             [Parameter(Mandatory=$false)]
