@@ -229,7 +229,7 @@ function Get-SDSHosts{
         $Credential = $variable:SDSDeploy.Credential
         try {
             $_request_ = New-Object PSObject
-            $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+            $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts?fields=*" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
             $_request_ = $_r.records
             return $_request_     
         }
