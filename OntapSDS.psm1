@@ -15,9 +15,7 @@ Get-ChildItem ".\lib" | Where {$_.Name -like "*.ps1"} | ForEach {
 ######################################### EXPORT Members
 Export-ModuleMember Connect-SDSDeploy
 Export-ModuleMember Disconnect-SDSDeploy
-Export-ModuleMember Get-SDSASUP
-Export-ModuleMember Set-SDSASUP
-Export-ModuleMember Get-SDSASUPSiteConfig
+Export-ModuleMember Get-SDSLicenses
 Export-ModuleMember Get-SDSCluster
 Export-ModuleMember Get-SDSHosts
 Export-ModuleMember Get-SDSSystemInfo
