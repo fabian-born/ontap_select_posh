@@ -104,7 +104,7 @@ function New-SDSHosts{
             $Credential = $variable:SDSDeploy.Credential
             $json_tmp = New-Object System.Collections.ArrayList
             
-            if ($type){ $json_tmp.add("""hypervisor_type"" : ""$($type)""" ) > $null }
+            if ($type){ $json_tmp.add("""hypervisor_type"" : ""$($type).toUpper()""" ) > $null }
             if ($vcenter){ $json_tmp.add("""management_server"" : ""$($vcenter)""") > $null }
             if ($name){ $json_tmp.add("""name"" : ""$($name)""") > $null}
             
@@ -198,3 +198,89 @@ function New-SDSHosts{
             }
         
         }
+
+function Get-SDSHosts{
+##############################
+#.SYNOPSIS
+#Short description
+#
+#.DESCRIPTION
+#Long description
+#
+#.PARAMETER DeployServer
+#Parameter description
+#
+#.EXAMPLE
+#An example
+#
+#.NOTES
+#General notes
+##############################
+    param(
+        [Parameter(Mandatory=$false)]
+        [string]$DeployServer
+
+        ) 
+    # actual code for the function goes here see the end of the topic for the complete code sample
+    
+    if ($global:SDSDeploy){
+        $DeployServer = $variable:SDSDeploy.DeployServer
+
+        $Credential = $variable:SDSDeploy.Credential
+        try {
+            $_request_ = New-Object PSObject
+            $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+            $_request_ = $_r.records
+            return $_request_     
+        }
+        catch {
+            write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+        } 
+    }else{
+        write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+    }
+
+}
+
+function Get-SDSLicenses{
+    ##############################
+    #.SYNOPSIS
+    #Short description
+    #
+    #.DESCRIPTION
+    #Long description
+    #
+    #.PARAMETER DeployServer
+    #Parameter description
+    #
+    #.EXAMPLE
+    #An example
+    #
+    #.NOTES
+    #General notes
+    ##############################
+        param(
+            [Parameter(Mandatory=$false)]
+            [string]$DeployServer
+    
+            ) 
+        # actual code for the function goes here see the end of the topic for the complete code sample
+        
+        if ($global:SDSDeploy){
+            $DeployServer = $variable:SDSDeploy.DeployServer
+    
+            $Credential = $variable:SDSDeploy.Credential
+            try {
+                $_request_ = New-Object PSObject
+                $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/licensing/licenses" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content | ConvertFrom-Json
+                $_request_ = $_r.records
+                return $_request_     
+            }
+            catch {
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+            } 
+        }else{
+            write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+        }
+    
+    }
