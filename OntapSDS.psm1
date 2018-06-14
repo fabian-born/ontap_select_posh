@@ -13,16 +13,26 @@ Get-ChildItem ".\lib" | Where {$_.Name -like "*.ps1"} | ForEach {
 
 
 ######################################### EXPORT Members
-Export-ModuleMember Connect-SDSDeploy
-Export-ModuleMember Disconnect-SDSDeploy
-Export-ModuleMember Get-SDSLicenses
 Export-ModuleMember Get-SDSCluster
-Export-ModuleMember Get-SDSHosts
-Export-ModuleMember Get-SDSSystemInfo
 Export-ModuleMember New-SDSCluster
 Export-ModuleMember Remove-SDSCluster
+Export-ModuleMember Get-SDSClusterNodeNetWork
+Export-ModuleMember Add-SDSClusterNodeParameter
+Export-ModuleMember Add-SDSClusterParameter
+Export-ModuleMember Add-SDSClusterHost
+Export-ModuleMember Get-SDSClusterNodes
+Export-ModuleMember Get-SDSClusterNodeSettings
+Export-ModuleMember Set-SDSClusterNodeNetWork
+Export-ModuleMember Get-SDSHostStoragePool
+Export-ModuleMember Get-SDSHostStorageDisk
+Export-ModuleMember Connect-SDSDeploy
+Export-ModuleMember Disconnect-SDSDeploy
+Export-ModuleMember Get-SDSSystemInfoV2
+Export-ModuleMember Get-SDSASUPV2
+Export-ModuleMember Get-SDSASUPSiteConfigV2
+Export-ModuleMember Set-SDSASUPV2
+Export-ModuleMember Get-SDSHosts
 Export-ModuleMember New-SDSHosts
 Export-ModuleMember Get-SDSHostsInfo
-Export-ModuleMember Add-SDSClusterParameter
-Export-ModuleMember Get-SDSClusterNodes
-Export-ModuleMember Add-SDSClusterHost
+Export-ModuleMember Get-SDSHosts
+Export-ModuleMember Get-SDSLicenses

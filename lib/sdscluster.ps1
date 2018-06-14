@@ -190,7 +190,7 @@ General notes
 
 
                         $_request_ = New-Object PSObject
-                        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($_findcluster_.id)" -SkipCertificateCheck -Method DELETE -ContentType "application/json" -Credential $Credential)
+                        $_request_ = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($_findcluster_.id)" -SkipCertificateCheck -Method DELETE -ContentType "application/json" -Credential $Credential) 
                         return $_request_
                     }
                     catch {
@@ -204,7 +204,7 @@ General notes
         
 }
 
-function Set-SDSClusterNodeNetWork{
+function Get-SDSClusterNodeNetWork{
     <#
     .SYNOPSIS
     
@@ -241,10 +241,6 @@ function Set-SDSClusterNodeNetWork{
             [string]$ClusterName,
             [Parameter(Mandatory=$true)]
             [string]$NodeName,
-            [Parameter(Mandatory=$true)]
-            [string]$ManagementNetwork,
-            [Parameter(Mandatory=$true)]
-            [string]$DataNetWork,
             [Parameter(Mandatory=$false)]
             [switch]$isArray
         )
@@ -253,25 +249,14 @@ function Set-SDSClusterNodeNetWork{
             $DeployServer = $variable:SDSDeploy.DeployServer
         
             $Credential = $variable:SDSDeploy.Credential
-            
 
-            $json_request ="{`n"
-            $json_request += " ""networks"": [`n"
-            $json_request += " { `n"
-            $json_request += "   ""id"": ""$($ManagementNetwork)"" `n"
-            $json_request += " },`n"
-            $json_request += " {`n"
-            $json_request += "   ""id"": ""$($DataNetWork)"" `n"
-            $json_request += " }`n"
-            $json_request += " ]`n"
-            $json_request += " }`n"
             try {
                 $clid = (Get-SDSCluster | ?{$_.name -eq "$($ClusterName)"}).id
                 $noid = (Get-SDSClusterNodes -clusterName $($clusterName) | ?{$_.name -eq "$($NodeName)"}).id
-                write-host "$json_request `n $($noid) `n $($clid)"
-                $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)/nodes/$($noid)" -SkipCertificateCheck -Method PATCH -ContentType "application/json" -Credential $Credential -body $($json_request))
+                ## write-host "$json_request `n $($noid) `n $($clid)"
+                $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)/nodes/$($noid)/networks?fields=*" -SkipCertificateCheck -Method GET -ContentType "application/json" -Credential $Credential ) | convertfrom-json
                
-                return $_r
+                return $_r.records
             }
             catch {
                 write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
@@ -379,9 +364,103 @@ function Add-SDSClusterNodeParameter{
         }
     }
     
+ 
     
+    function Add-SDSClusterParameter{
+        <#
+        .SYNOPSIS
+        
+        
+        .DESCRIPTION
+        Long description
+        
+        .PARAMETER DeployServer
+        Parameter description
+        
+        .PARAMETER ClusterName
+        Parameter description
+        
+        .PARAMETER parent
+        Parameter description
+        
+        .PARAMETER Object
+        Parameter description
+        
+        .PARAMETER Value
+        Parameter description
+        
+        .EXAMPLE
+        An example
+        
+        .NOTES
+        General notes
+        #>#
+            
+            param(
+                [Parameter(Mandatory=$false)]
+                [string]$DeployServer,
+                [Parameter(Mandatory=$true)]
+                [string]$ClusterName,
+                [Parameter(Mandatory=$false)]
+                [string]$parent,
+                [Parameter(Mandatory=$true)]
+                [string]$Object,
+                [Parameter(Mandatory=$true)]
+                [string]$Value,
+                [Parameter(Mandatory=$false)]
+                [switch]$isArray
+            )
+        
+            if ($global:SDSDeploy){
+                $DeployServer = $variable:SDSDeploy.DeployServer
+            
+                $Credential = $variable:SDSDeploy.Credential
+                
+                if (($Value.split(",")).count -gt 2){
+                    $isArray = $true
+                }
+                $json_request ="{`n"
+                if ($parent){   $json_request += """$($parent)"" : { `n" }
+                if ($object){   $json_request += """$($object)"" : " }
+                if ($isArray){ 
+                    $json_request += " [`n"
+                    write-host ((($value).split(",")).length)
+                    $i=0;while($i -lt ((($value).split(",")).length)){ 
+                        
+                        if($i -eq ((($value).split(",")).length-1)){
+                            $json_request +=  " ""$(($value).split(",")[$i])""`n"
+                        }else{
+                                $json_request += """$(($value).split(",")[$i])"",`n"
+                        }   
+                        
+                        $i++
+                    }
+                    $json_request += " ]`n"
+                    if ($parent){   $json_request += "}`n" }
+                }else{
+                 #   $json_request += " {`n"
+                    $json_request += " ""$($value)"" `n"
+                    if ($parent){   $json_request += "}`n" }
+                }
+                $json_request += " }`n"
+                try {
+                    $clid = (Get-SDSCluster | ?{$_.name -eq "$($ClusterName)"}).id
+                    $noid = (Get-SDSClusterNodes -clusterName $($clusterName) | ?{$_.name -eq "$($NodeName)"}).id
+                    write-host "$json_request `n $($noid) `n $($clid)"
+                    $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)" -SkipCertificateCheck -Method PATCH -ContentType "application/json" -Credential $Credential -body $($json_request))
+                   
+                    return $_r
+                }
+                catch {
+                    write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+                }
+                    
+            }else{
+                write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+            }
+        }
     
-    function Add-SDSClusterHost{
+function Add-SDSClusterHost{
         param(
             [Parameter(Mandatory=$false)]
             [string]$DeployServer,
@@ -484,3 +563,148 @@ function Get-SDSClusterNodeSettings{
             write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
         }
 }
+
+
+function Set-SDSClusterNodeNetWork{
+    <#
+    .SYNOPSIS
+    
+    
+    .DESCRIPTION
+    Long description
+    
+    .PARAMETER DeployServer
+    Parameter description
+    
+    .PARAMETER ClusterName
+    Parameter description
+    
+    .PARAMETER parent
+    Parameter description
+    
+    .PARAMETER Object
+    Parameter description
+    
+    .PARAMETER Value
+    Parameter description
+    
+    .EXAMPLE
+    An example
+    
+    .NOTES
+    General notes
+    #>#
+        
+        param(
+            [Parameter(Mandatory=$false)]
+            [string]$DeployServer,
+            [Parameter(Mandatory=$true)]
+            [string]$ClusterName,
+            [Parameter(Mandatory=$true)]
+            [string]$NodeName,
+            [Parameter(Mandatory=$true)]
+            [string]$NetworkType,
+            [Parameter(Mandatory=$true)]
+            [string]$NetworkName,
+            [Parameter(Mandatory=$false)]
+            [switch]$isArray
+        )
+    
+        if ($global:SDSDeploy){
+            $DeployServer = $variable:SDSDeploy.DeployServer
+        
+            $Credential = $variable:SDSDeploy.Credential
+            
+            switch($Networktype){
+                "mgmt" { 
+                        $networkinfo =  Get-SDSClusterNodeNetWork -ClusterName $($clusterName) -NodeName $($NodeName) | ?{$_.purpose -eq "mgmt"} 
+                       }
+                "data" { 
+                        $networkinfo =  Get-SDSClusterNodeNetWork -ClusterName $($clusterName) -NodeName $($NodeName) | ?{$_.purpose -eq "data"} 
+                       }
+                default { write-host "Nothing found" ; break}
+            }
+            
+ 
+            try {
+                $clid = (Get-SDSCluster | ?{$_.name -eq "$($ClusterName)"}).id
+                $noid = (Get-SDSClusterNodes -clusterName $($clusterName) | ?{$_.name -eq "$($NodeName)"}).id
+                $netid = $networkinfo.id
+                $json_request = "{`n"
+                $json_request += " ""name"": ""$($NetworkName)"" `n"
+                $json_request += "}"
+                write-host "$json_request `n $($noid) `n $($clid) `n $($netid)"
+                $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)/nodes/$($noid)/networks/$($netid)" -SkipCertificateCheck -Method PATCH -ContentType "application/json" -Credential $Credential -body $($json_request))
+               
+                return $_r
+            }
+            catch {
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)" 
+            }
+                
+        }else{
+            write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+        }
+    }
+
+    function Get-SDSHostStoragePool{
+        param(
+            [Parameter(Mandatory=$false)]
+            [string]$DeployServer,
+            [Parameter(Mandatory=$true)]
+            [string]$HostName
+    
+            ) 
+        # actual code for the function goes here see the end of the topic for the complete code sample
+        
+        if ($global:SDSDeploy){
+            $DeployServer = $variable:SDSDeploy.DeployServer
+    
+            $Credential = $variable:SDSDeploy.Credential
+            $hostid = ( Get-SDSHosts | ?{$_.name -eq "$($Hostname)"}).id
+            try {
+                $_request_ = New-Object PSObject
+                $_r = (((Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts/$($hostid)/storage?fields=*" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content) | convertfrom-json ).record
+                
+                
+                return $_r.pools   
+            }
+            catch {
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+            } 
+        }else{
+            write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+        }
+    
+    }
+    
+    function Get-SDSHostStorageDisk{
+        param(
+            [Parameter(Mandatory=$false)]
+            [string]$DeployServer,
+            [Parameter(Mandatory=$true)]
+            [string]$HostName
+    
+            ) 
+        # actual code for the function goes here see the end of the topic for the complete code sample
+        
+        if ($global:SDSDeploy){
+            $DeployServer = $variable:SDSDeploy.DeployServer
+    
+            $Credential = $variable:SDSDeploy.Credential
+            $hostid = ( Get-SDSHosts | ?{$_.name -eq "$($Hostname)"}).id
+            try {
+                $_request_ = New-Object PSObject
+                $_r = (((Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/hosts/$($hostid)/storage?fields=*" -SkipCertificateCheck -Method GET -ContentType JSON -Credential $Credential).content) | convertfrom-json).record
+                
+                
+                return $_r.disks   
+            }
+            catch {
+                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+            } 
+        }else{
+            write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
+        }
+    
+    }
