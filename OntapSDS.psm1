@@ -36,3 +36,5 @@ Export-ModuleMember New-SDSHosts
 Export-ModuleMember Get-SDSHostsInfo
 Export-ModuleMember Get-SDSHosts
 Export-ModuleMember Get-SDSLicenses
+Export-ModuleMember Set-SDSClusterNodeStoragePool
+Export-ModuleMember Invoke-SDSClusterDeploy
