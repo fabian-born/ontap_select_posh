@@ -343,7 +343,11 @@ function Add-SDSClusterNodeParameter{
                 if ($parent){   $json_request += "}`n" }
             }else{
              #   $json_request += " {`n"
-                $json_request += " ""$($value)"" `n"
+                if (($value -eq "true") -or ($value -eq "false")) { $json_request += " $($value) `n"}
+                else{
+                    $json_request += " ""$($value)"" `n"
+                }
+                
                 if ($parent){   $json_request += "}`n" }
             }
             $json_request += " }`n"
@@ -640,7 +644,7 @@ function Set-SDSClusterNodeNetWork{
                 return $_r  
             }
             catch {
-                write-host -foregroundcolor red  "Error connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
+                write-host -foregroundcolor red  "sError connecting to ONTAP Select Deployment. Error Message: $($_.Exception.Message)"  
             } 
         }else{
             write-host -foregroundcolor yellow "Not Connected to the Deployment Server. Please run ""Connect-SDSDeploy"" !`n"
@@ -712,7 +716,7 @@ function Set-SDSClusterNodeNetWork{
             }
             try {
                 $clid = (Get-SDSCluster | ?{$_.name -eq "$($ClusterName)"}).id
-                $noid = (Get-SDSClusterNodes -clusterName $($clusterName) | ?{$_.name -eq "$($NodeName)"}).id
+                $noid = (Get-SDSClusterNodes -clusterName $($clusterName) | ?{$_.name -eq "$($NodeName)"}).id   
                 $storagename = $networkinfo.id
                 
                 $json_request = "
@@ -757,8 +761,10 @@ function Invoke-SDSClusterDeploy{
                 
                 $json_request = "
                 {
-                
-                }
+                    ""ontap_credential"": {
+                      ""password"": ""installpw01""
+                    }
+                  }
                 "
             
                 $_r = (Invoke-WebRequest -Uri "https://$($DeployServer)/api/v3/clusters/$($clid)/deploy" -SkipCertificateCheck -Method POST -ContentType "application/json" -Credential $Credential -body $($json_request))
